@@ -112,6 +112,7 @@ var budgetController = (function(){
         },
 
         itemDelete: function(ID, type){
+            // console.log("subtbracted");
             data.allItems[type].forEach(function(curr){
                 if(curr.id === ID){
                     data.allItems[type].splice(data.allItems[type].indexOf(curr), 1);
@@ -174,10 +175,10 @@ var UIController = (function(){
             //create HTML string with placeholder text;
             if(type === "inc"){
                 element = DOMstrings.incomeContainer;
-                html = '<div class="item clearfix" id="income-%id%"><div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">%value%</div><div class="item__delete"><button class="item__delete--btn inc " id="%idd%"><i class="ion-ios-close-outline">X</i></button></div></div></div>';
+                html = '<div class="item clearfix" id="income-%id%"><div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">%value%</div><div class="item__delete"><button class="item__delete--btn inc" onclick="UIController.listener(event)" id="%idd%" data-event="false"><i class="ion-ios-close-outline">X</i></button></div></div></div>';
             }else if(type === "exp"){
                 element = DOMstrings.expensesContainer;
-                html ='<div class="item clearfix" id="expense-%id%"><div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">%value%</div><div class="item__percentage" id="percentage-%idp%">21%</div><div class="item__delete"><button class="item__delete--btn exp " id="%idd%"><i class="ion-ios-close-outline">X</i></button></div></div></div>'
+                html ='<div class="item clearfix" id="expense-%id%"><div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">%value%</div><div class="item__percentage" id="percentage-%idp%">21%</div><div class="item__delete"><button class="item__delete--btn exp "  onclick="UIController.listener(event)" id="%idd%"><i class="ion-ios-close-outline">X</i></button></div></div></div>'
             }
 
             //replace the placeholder text with some actual data
@@ -190,6 +191,26 @@ var UIController = (function(){
             //Insert the HTML into the DOM
             document.querySelector(element).insertAdjacentHTML("beforeend", newHtml);
          },
+         listener: function(e){
+            
+            eventID = parseInt(e.currentTarget.id); //this is because we want the element that has the event listener attached to it.....in this case event .target owould return the icon that was clicked because it is the on that cause the event to bubble......the bubbled event is the event listener we are dealing with now            
+            type = e.currentTarget.className.slice(-4,21);
+            console.log("button pressed", e.currentTarget.dataset.event);
+            if(type === " inc"){
+              document.querySelector("#income-" + eventID).style.display = "none";
+              document.querySelector("#income-" + eventID).style.height = 0;
+
+              if(document.querySelector("#income-" + eventID).style.display === "none"){
+                document.querySelector("#income-" + eventID).parentNode.removeChild(document.querySelector("#income-" + eventID));
+              }
+            controller.deleteItem(eventID, "inc");
+
+           }else if(type ==="exp"){
+              document.querySelector("#expense-" + eventID).parentNode.removeChild(document.querySelector("#expense-" + eventID));
+              controller.deleteItem(eventID, "exp");
+
+          }
+      },
 
          clearFields: function(){
              var fields, fieldsArr;
@@ -229,11 +250,12 @@ var UIController = (function(){
          },
 
          removelistItem: function(ID ,type){
-             if(type === "inc"){
-                 document.querySelector("#income-" + ID).style.display = "none";
-             }else if(type ==="exp"){
-                 document.querySelector("#expense-" + ID).style.display = "none";
-             }
+            //  if(type === "inc"){
+            //      document.querySelector("#income-" + ID).style.display = "none";
+            //      console.log(document.querySelector("#income-" + ID));
+            //  }else if(type ==="exp"){
+            //      document.querySelector("#expense-" + ID).style.display = "none";
+            //  }
          },
 
          displayMonth: function(){
@@ -261,7 +283,6 @@ var controller = (function(budgetCtrl, UICtrl){
         document.querySelector(DOM.inputBtn).addEventListener("click", function(){
             ctrlAddItem(); 
             addPerc(); 
-            setUpdelete();
         });
         // document.querySelector(".test__add").addEventListener("click", addPerc);
 
@@ -272,21 +293,6 @@ var controller = (function(budgetCtrl, UICtrl){
             }
         }); 
     };
-    var setUpdelete = function(){
-        var buttons, allButtons, eventID, type;
-       buttons =  document.querySelectorAll(".item__delete--btn");
-
-       allButtons = Array.prototype.slice.call(buttons);
-       
-       allButtons.forEach(function(element){
-           element.addEventListener("click", function(e){
-                  eventID = parseInt(e.currentTarget.id); //this is because we want the element that has the event listener attached to it.....in this case event .target owould return the icon that was clicked because it is the on that cause the event to bubble......the bubbled event is the event listener we are dealing with now            
-                  type = e.currentTarget.className.slice(-4,21);
-
-                  deleteItem(eventID, type);
-        })
-       })
-    }
 
     var updateBudget = function(){
         var budget ,incomeTot, expensesTot;
@@ -348,7 +354,7 @@ var controller = (function(budgetCtrl, UICtrl){
     };
 
     var deleteItem = function(ID, type){
-
+        // console.log(type)
         if (type ==="inc"){
             //1.delete from array //bc
             //2.subtract the value from the total //bc
@@ -384,6 +390,7 @@ var controller = (function(budgetCtrl, UICtrl){
 
 
     return {
+        deleteItem: deleteItem,
         init: function(){
             console.log("application has started");
             UICtrl.displayMonth();
